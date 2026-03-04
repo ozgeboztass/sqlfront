@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SQL Front
 
-## Getting Started
+MySQL tabanli urun listesi uygulamasi (Next.js App Router + TypeScript).
 
-First, run the development server:
+## Gereksinimler
+
+- Node.js 20+
+- MySQL 8+
+
+## Kurulum
+
+1. Bagimliliklari kur:
+   ```bash
+   npm ci
+   ```
+2. Ortam degiskenlerini hazirla:
+   ```bash
+   cp .env.example .env.local
+   ```
+3. Veritabaninda ornek tabloyu olustur:
+   ```sql
+   CREATE DATABASE IF NOT EXISTS ecommerce_db;
+   USE ecommerce_db;
+
+   CREATE TABLE IF NOT EXISTS Product (
+     product_id INT AUTO_INCREMENT PRIMARY KEY,
+     name VARCHAR(120) NOT NULL,
+     price DECIMAL(10,2) NOT NULL,
+     stock INT NOT NULL DEFAULT 0,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+   ```
+4. Uygulamayi baslat:
+   ```bash
+   npm run dev
+   ```
+
+## Ortam Degiskenleri
+
+`.env.local` icin gerekli alanlar:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=app_user
+DB_PASSWORD=change_me
+DB_NAME=ecommerce_db
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## API
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### `GET /api/products?limit=20&offset=0`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Urunleri `product_id DESC` sirasiyla getirir.
+- `limit` en fazla `100` olabilir.
+- Donus:
+  ```json
+  {
+    "data": [],
+    "pagination": {
+      "limit": 20,
+      "offset": 0,
+      "count": 0
+    }
+  }
+  ```
 
-## Learn More
+### `POST /api/products`
 
-To learn more about Next.js, take a look at the following resources:
+- Beklenen body:
+  ```json
+  {
+    "name": "Notebook",
+    "price": 49.9,
+    "stock": 7
+  }
+  ```
+- Dogrulama:
+  - `name` bos olamaz ve 120 karakterden kisa olmali.
+  - `price` negatif olamaz.
+  - `stock` negatif olamaz ve tam sayi olmali.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Komutlar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev`: Gelistirme ortami
+- `npm run lint`: ESLint kontrolu
+- `npm run typecheck`: TypeScript tip kontrolu
+- `npm run test`: Vitest testleri
+- `npm run build`: Uretim build'i
 
-## Deploy on Vercel
+## CI
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+GitHub Actions workflow'u su adimlari calistirir:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. `npm ci`
+2. `npm run lint`
+3. `npm run typecheck`
+4. `npm run test`
+5. `npm run build`
